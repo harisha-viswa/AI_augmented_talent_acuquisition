@@ -34,10 +34,21 @@ const Signup = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
+  <div className="d-flex align-items-center justify-content-center" 
+    style={{ 
+      width: "100vw", 
+      minHeight: "100vh", 
+      backgroundColor: "#E0F7FA", 
+      display: "flex", 
+      flexDirection: "column",
+    }}>
+    <div className="container-fluid flex-grow-1 d-flex align-items-center justify-content-center"
+>
       <div className="row w-75">
+
         {/* Sign-Up Form */}
-        <div className="col-md-7 p-4 border rounded shadow bg-white">
+        <div className="col-md-5 p-4 border rounded shadow bg-white" style={{ height: "90vh" }}>
+
           <h2 className="text-center mb-4">SIGN UP</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
@@ -115,23 +126,24 @@ const Signup = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary w-100">
+            <button type="submit" className="btn w-100 text-white" style={{ backgroundColor: "#008080", border: "none" }}>
               Create Account
             </button>
           </form>
         </div>
 
         {/* Image Placeholder */}
-        <div className="col-md-4 d-flex align-items-center justify-content-center border rounded shadow bg-light">
-        <img 
-    src="/images/signup_image.jpg "// Change to your actual image path
-    alt="Signup Illustration"
-    className="img-fluid rounded"
-    style={{ maxWidth: "100%", maxHeight: "300px" }} 
-  />
+        <div className="col-md-7 d-flex align-items-center justify-content-center border rounded shadow bg-light p-0" style={{ height: "90vh" }}>
+        <img
+        src="/images/signup_image.jpg"
+        alt="Signup Illustration"
+        className="img-fluid"
+        style={{ width: "100%", height: "100vh", objectFit: "cover",borderRadius: "8px" }} 
+      />
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
