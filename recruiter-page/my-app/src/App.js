@@ -2,6 +2,8 @@ import React from "react";
 import RecruiterPage from "./RecruiterPage";
 import "./styles.css";
 
+
+
 function App() {
   return (
     <div>

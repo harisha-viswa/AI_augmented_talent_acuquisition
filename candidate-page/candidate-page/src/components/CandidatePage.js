@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./CandidatePage.css";
 import { FaUserCircle } from "react-icons/fa";
-import { IoClose } from "react-icons/io5"; // Import close icon
+import { IoClose } from "react-icons/io5"; // Import close
+import * as XLSX from "xlsx"; // Import xlsx
 
 const CandidatePage = () => {
   const [candidateName, setCandidateName] = useState("Candidate Name");
@@ -69,11 +70,37 @@ const CandidatePage = () => {
       return;
     }
 
+    //Check if the phone number is unique
+    const isPhoneUnique = !appliedJobs.some((applicant) => applicant.phone === phone);
+    if (!isPhoneUnique) {
+      alert("⚠️ You have already applied with this phone number.");
+      return;
+    }
+
+    // Store the applicant's data
+    const newApplicant = { name, email, phone, resume };
+
+    // Add the applicant to the applied jobs list
+    setAppliedJobs([...appliedJobs, newApplicant]);
+
+    // Prepare the data to be saved in Excel
+    const excelData = appliedJobs.map((applicant) => ({
+      Name: applicant.name,
+      Email: applicant.email,
+      Phone: applicant.phone,
+      Resume: applicant.resume.name, // Only store the resume file name
+    }));
+
+    // Convert to Excel file and trigger download
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Candidates");
+    XLSX.writeFile(wb, "Candidate_Applications.xlsx");
+
+
     alert(`✅ Successfully applied for ${selectedJob.title}!`);
     
-    if (!appliedJobs.includes(selectedJob.id)) {
-      setAppliedJobs([...appliedJobs, selectedJob.id]);
-    }
+   
     setShowApplyForm(false);
   };
 

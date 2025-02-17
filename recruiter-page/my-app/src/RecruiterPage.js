@@ -1,149 +1,173 @@
-import React, { useState, useEffect } from "react";
-import "./styles.css";  // Import styles
+import React, { useState } from "react";
+import "./styles.css";
+import * as XLSX from "xlsx";
 
-const RecruiterPage = ({ recruiterName }) => {
-    const [fileName, setFileName] = useState("");
+
+const RecruiterPage = () => {
     const [showModal, setShowModal] = useState(false);
-    const [name, setName] = useState("");
-    const [jobs, setJobs] = useState([]); 
-    const [newJobRole, setNewJobRole] = useState(""); 
-    const [experience, setExperience] = useState(""); 
-    const [salary, setSalary] = useState(""); 
-    const [location, setLocation] = useState(""); 
+    const [jobId, setJobId] = useState(0);
+    const [jobRole, setJobRole] = useState("");
+    const [yearsOfExperience, setYearsOfExperience] = useState("");
+    const [salary, setSalary] = useState("");
+    const [location, setLocation] = useState("");
+    const [resumeName, setResumeName] = useState("");
+    const [jobs, setJobs] = useState([]);
 
-    useEffect(() => {
-        const storedName = localStorage.getItem("recruiterName") || recruiterName || "Recruiter";
-        setName(storedName);
-    }, [recruiterName]);
-
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setFileName(file.name);
-        } else {
-            setFileName("");  
-        }
+    const generateJobId = () => {
+        return Date.now();
     };
 
-    const handleJobSubmit = () => {
-        if (newJobRole.trim() === "") {
-            alert("Please enter a job role!");
-            return;
-        }
-        
-        if (experience.trim() === "") {
-            alert("Please enter the required years of experience!");
-            return;
-        }
+    const openJobForm = () => {
+        setJobId(generateJobId());
+        setShowModal(true);
+    };
 
-        if (salary.trim() === "") {
-            alert("Please enter the stipend or salary!");
-            return;
-        }
-
-        if (location.trim() === "") {
-            alert("Please enter the job location!");
-            return;
-        }
-
-        if (!fileName) {
-            alert("Please upload a job description (PDF)!");
-            return;
-        }
-
-        setJobs([...jobs, newJobRole]); 
-        setNewJobRole(""); 
-        setExperience("");
+    const closeJobForm = () => {
+        setShowModal(false);
+        setJobRole("");
+        setYearsOfExperience("");
         setSalary("");
         setLocation("");
-        setFileName("");
-        setShowModal(false); 
+        setResumeName("");
     };
 
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setResumeName(file.name);
+        } else {
+            setResumeName("");
+        }
+    };
+
+    const handleSubmit = () => {
+        if (!jobRole || !yearsOfExperience || !salary || !location || !resumeName) {
+            alert("Please fill all fields before submitting.");
+            return;
+        }
+    
+        const newJob = {
+            jobId,
+            jobRole,
+            yearsOfExperience: parseInt(yearsOfExperience),
+            salary: parseInt(salary),
+            location,
+            resumeName,
+        };
+    
+        // Add the new job to the jobs list
+        setJobs([...jobs, newJob]);
+    
+        // Step 1: Export jobs to Excel
+        exportToExcel([...jobs, newJob]);
+    
+        // Close the modal
+        closeJobForm();
+    };
+    
+    // Function to export job details to Excel
+    const exportToExcel = (jobsData) => {
+        const ws = XLSX.utils.json_to_sheet(jobsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Jobs");
+    
+        // Generate and download the Excel file
+        XLSX.writeFile(wb, "jobs.xlsx");
+    };
+    
     return (
         <div className="recruiter-container">
-            {/* Navbar */}
             <nav className="navbar">
-                <h1 className="company-name">Solutions</h1>
-                <div className="profile-section">
-                    <div className="profile-icon">👤</div> 
-                    <p className="username">{name}</p> 
-                </div>
+                <h2>Solutions</h2>
+                <div className="profile-icon">👤</div>
             </nav>
 
-            {/* Welcome Message */}
-            <h2 className="welcome-message">Welcome, {name}</h2>
-
-            {/* Display Added Jobs */}
-            <div className="job-list">
-                {jobs.map((job, index) => (
-                    <div key={index} className="job-item">
-                        {job}
-                    </div>
-                ))}
+            <div className="content">
+                <div className="welcome-section">
+                    <h1>Welcome, Recruiter!</h1>
+                    <p>Manage your job postings efficiently.</p>
+                </div>
+                <div className="create-job">
+                    <button className="create-job-btn" onClick={openJobForm}>
+                        ➕ Create a New Job
+                    </button>
+                </div>
             </div>
 
-            {/* Create New Job Button */}
-            <button className="create-job-btn" onClick={() => setShowModal(true)}>
-                ➕ Create a New Job
-            </button>
-
-            {/* Popup Modal */}
+            {/* Popup Modal with Overlay */}
             {showModal && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <button className="close-button" onClick={() => setShowModal(false)}>✖</button>
-                        <h3>Create a Job Listing</h3>
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <button className="close-button" onClick={closeJobForm}>
+                            ✖
+                        </button>
 
-                        <input 
-                            type="text" 
-                            placeholder="Job Role" 
-                            className="input-field" 
-                            value={newJobRole} 
-                            onChange={(e) => setNewJobRole(e.target.value)}
-                            required
+                        <h2>Create Job</h2>
+
+                        <label>Job ID:</label>
+                        <input type="text" value={jobId} readOnly />
+
+                        <label>Job Role:</label>
+                        <input
+                            type="text"
+                            placeholder="Enter job role"
+                            value={jobRole}
+                            onChange={(e) => setJobRole(e.target.value)}
                         />
-                        <input 
-                            type="text" 
-                            placeholder="Years of Experience" 
-                            className="input-field" 
-                            value={experience}
-                            onChange={(e) => setExperience(e.target.value)}
-                            required
+
+                        <label>Years of Experience:</label>
+                        <input
+                            type="number"
+                            placeholder="Enter experience required"
+                            value={yearsOfExperience}
+                            onChange={(e) => setYearsOfExperience(e.target.value)}
                         />
-                        <input 
-                            type="text" 
-                            placeholder="Stipend/Salary" 
-                            className="input-field" 
+
+                        <label>Salary:</label>
+                        <input
+                            type="number"
+                            placeholder="Enter stipend or salary"
                             value={salary}
                             onChange={(e) => setSalary(e.target.value)}
-                            required
                         />
-                        <input 
-                            type="text" 
-                            placeholder="Location" 
-                            className="input-field" 
+
+                        <label>Location:</label>
+                        <input
+                            type="text"
+                            placeholder="Enter location"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                            required
                         />
 
-                        {/* File Upload Section */}
-                        <label className="custom-file-upload">
-                            Upload Job Description (PDF)
-                            <span className="file-size-note">(Max: 20MB)</span>
-                            <input type="file" accept=".pdf" onChange={handleFileChange} required />            
-                        </label>
-                        {fileName && <p className="file-name">Selected File: {fileName}</p>}
+                        <label>Upload Job Description (PDF):</label>
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileUpload}
+                        />
+                        <p className="file-name">{resumeName}</p>
 
-                        {/* Submit Button */}
-                        <button className="submit-btn" onClick={handleJobSubmit}>Submit</button>
+                        <div className="modal-buttons">
+                            <button className="submit-btn" onClick={handleSubmit}>
+                                Submit
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
+
+            <div className="job-cards-container">
+                {jobs.map((job) => (
+                    <div className="job-card" key={job.jobId}>
+                        <h3>{job.jobRole}</h3>
+                        <p><strong>Salary:</strong> ₹{job.salary}</p>
+                        <p><strong>Location:</strong> {job.location}</p>
+                        <p><strong>Experience:</strong> {job.yearsOfExperience} years</p>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 
 export default RecruiterPage;
-
